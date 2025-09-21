@@ -1,0 +1,212 @@
+# Text Summarization System - Complete Flow Analysis
+
+## High-Level Architecture Overview
+
+The text summarization system is a Flask-based API that implements an extractive summarization approach using machine learning feature extraction combined with PCA-based feature enhancement (replacing the original RBM). The system follows a modular architecture:
+
+**Core Components:**
+- Flask API Layer (app.py) - HTTP interface
+- Compatibility Layer (model_features.py) - Legacy API exposure
+- Summary Engine (summarygenerator/summary.py) - Main orchestration
+- Text Feature Extraction (summarygenerator/text_features.py) - Feature computation
+- Entity Recognition (summarygenerator/entity.py) - Named entity detection
+- Feature Enhancement (summarygenerator/rbm_simple.py) - PCA-based enhancement
+- Resources & Utilities (summarygenerator/resources.py) - Shared NLP resources
+
+## Complete Processing Flow
+
+### 1. HTTP Request Reception
+**Entry Point:** app.py route `/json-example` (POST)
+**Input:** JSON with `textString` field
+**Validation:** Ensures textString exists
+**Delegation:** Calls model_features.executeForAFile(text)
+
+### 2. Text Preprocessing & Sentence Segmentation
+**Function:** split_into_sentences() in text_features.py
+**Process:**
+- Handles abbreviations, acronyms using regex patterns
+- Replaces periods with <prd> to preserve abbreviations
+- Splits on sentence-ending punctuation (., !, ?)
+- Returns clean list of sentences
+**Output:** List of sentence strings
+
+### 3. Tokenization & Stop Word Removal
+**Function:** remove_stop_words() in text_features.py
+**Process:**
+- Converts to lowercase and splits into tokens
+- Removes English stop words using NLTK stopwords corpus
+- Applies Porter stemming to remaining words
+**Output:** List of tokenized sentences (stemmed tokens)
+
+### 4. Part-of-Speech Tagging
+**Function:** posTagger() in text_features.py
+**Process:** Uses NLTK POS tagger on tokenized sentences
+**Output:** List of sentences with POS tags for each token
+
+### 5. Feature Extraction Pipeline (8 Features)
+
+**Feature 1: TF-ISF Score**
+- Function: tfIsf() in text_features.py
+- Algorithm: Term Frequency × Inverse Sentence Frequency
+- Purpose: Identifies sentences with important words
+
+**Feature 2: Similarity Score**
+- Function: similarityScores() in text_features.py
+- Algorithm: Jaccard similarity between sentences
+- Purpose: Identifies sentences similar to others (indicates importance)
+
+**Feature 3: Proper Noun Score**
+- Function: properNounScores() in text_features.py
+- Algorithm: Ratio of proper nouns (NNP, NNPS tags) to total words
+- Purpose: Sentences with more proper nouns contain key information
+
+**Feature 4: Centroid Similarity Score**
+- Function: centroidSimilarity() in text_features.py
+- Algorithm: Cosine similarity to centroid sentence (highest TF-ISF)
+- Purpose: Measures how representative a sentence is
+
+**Feature 5: Numeric Token Score**
+- Function: numericToken() in text_features.py
+- Algorithm: Ratio of numeric tokens to total tokens
+- Purpose: Sentences with numbers contain factual information
+
+**Feature 6: Named Entity Recognition Score**
+- Function: namedEntityRecog() in entity.py
+- Algorithm: Count of named entities using NLTK NE chunker
+- Purpose: Sentences with more named entities are important
+
+**Feature 7: Sentence Position Score**
+- Function: sentencePos() in text_features.py
+- Algorithm: Cosine-based position weighting
+- Purpose: Accounts for positional importance
+
+**Feature 8: Sentence Length Score**
+- Function: sentenceLength() in text_features.py
+- Algorithm: Normalized word count (< 3 words = score 0)
+- Purpose: Filters short sentences, normalizes by max length
+
+**Feature 9: Thematic Feature Score**
+- Function: thematicFeature() in text_features.py
+- Algorithm: Overlap with top 10 most frequent document words
+- Purpose: Identifies sentences with main themes
+
+### 6. Feature Matrix Construction
+**Location:** executeForAFile() in summary.py
+**Process:**
+- Creates 8×n matrix (features × sentences)
+- Transposes to n×8 matrix (sentences × features)
+**Output:** NumPy array featureMat of shape (n_sentences, 8)
+
+### 7. Feature Enhancement via PCA-Based RBM
+**Function:** test_rbm() in rbm_simple.py
+**Modern Implementation:** Uses PCA instead of traditional RBM
+**Process:**
+- Standardizes features using StandardScaler
+- Applies PCA transformation (dimensionality reduction)
+- Reconstructs features via inverse PCA transform
+- Adds controlled noise to simulate RBM stochastic behavior
+- Ensures positive values and scales back to original range
+**Parameters:** learning_rate=0.1, training_epochs=14, batch_size=5, n_chains=5, n_hidden=8
+**Purpose:** Enhances feature representations and reduces noise
+**Output:** Enhanced feature matrix of same dimensions
+
+### 8. Sentence Scoring & Ranking
+**Process:**
+- Sums enhanced features across each sentence (row-wise sum)
+- Creates list of [score, sentence_index] pairs
+- Sorts by score (ascending - lowest scores = most important)
+**Selection Strategy:** Takes bottom 50% of scores (lowest = most important)
+
+### 9. Summary Construction
+**Selection Rules:**
+- Always includes first sentence (index 0)
+- Adds sentences from bottom half of ranked scores
+- Excludes first sentence from ranking to avoid duplication
+**Ordering:** Sorts selected sentences by original document order
+**Output Construction:** Concatenates selected sentences into final summary
+
+### 10. Response Generation
+**Format:** JSON response with `summary` field
+**Content:** Concatenated sentences maintaining original order
+**Return:** HTTP 200 with summary or HTTP 400 for errors
+
+## Key Algorithms & Data Structures
+
+### Sentence Splitting Algorithm
+- Sophisticated regex patterns handle abbreviations, websites, titles
+- Preserves sentence boundaries while handling edge cases
+- Correctly processes quotation marks and punctuation
+
+### Feature Normalization Strategies
+- TF-ISF: Normalized by sentence length
+- Similarity: Jaccard coefficient (0-1 range)
+- Proper nouns: Ratio to sentence length
+- Numeric tokens: Ratio to sentence length
+- Position: Cosine weighting function
+- Length: Normalized by maximum possible length
+- Thematic: Ratio to total unique words
+
+### PCA-Based RBM Replacement
+- Uses PCA for dimensionality reduction and reconstruction
+- Simulates RBM's feature learning through mathematical transformation
+- Maintains interface compatibility with original RBM implementation
+
+## Data Flow Transformations
+
+**Primary Data Pipeline:**
+1. String → Sentence list (preprocessing)
+2. Sentence list → Token list (tokenization)
+3. Token list → Tagged list (POS tagging)
+4. Multiple lists → Feature vectors (feature extraction)
+5. Feature vectors → Feature matrix (matrix construction)
+6. Feature matrix → Enhanced matrix (PCA processing)
+7. Enhanced matrix → Sentence scores (scoring)
+8. Sentence scores → Selected sentences (ranking/selection)
+9. Selected sentences → Summary string (reconstruction)
+
+**Key Data Structures:**
+- sentences: List[str] - Original sentences
+- tokenized_sentences: List[List[str]] - Stemmed tokens per sentence
+- tagged: List[List[Tuple[str, str]]] - POS-tagged tokens
+- featureMatrix: List[List[float]] - 8 feature vectors
+- featureMat: numpy.ndarray - (n_sentences, 8) matrix
+- enhanced_feature_sum: List[Tuple[float, int]] - (score, index) pairs
+
+## Module Integration Points
+
+**Dependency Chain:**
+app.py → model_features.py → summarygenerator.summary → text_features.py, entity.py, rbm_simple.py
+
+**Resource Sharing:**
+- Stop words, stemmer, regex patterns shared via resources.py
+- NLTK models downloaded and cached globally
+- Porter stemmer instance reused across modules
+
+**Error Handling:**
+- Try-catch blocks in stemming operations
+- Graceful fallbacks for malformed tokens
+- Input validation at API layer
+
+## Performance Characteristics
+
+**Computational Complexity:**
+- Sentence splitting: O(n) where n = text length
+- Feature extraction: O(s²) where s = number of sentences
+- PCA processing: O(s × f²) where f = number of features
+- Overall: O(s²) dominated by similarity calculations
+
+**Memory Usage:**
+- Feature matrix: 8 × number_of_sentences × 8 bytes
+- Enhanced features: Same as feature matrix
+- Temporary structures for tokenization and processing
+
+## Summary Algorithm Strategy
+
+This system implements a sophisticated extractive summarization approach that:
+1. Extracts multiple linguistic features from each sentence
+2. Enhances features using PCA-based dimensionality reduction
+3. Scores sentences based on enhanced feature combinations
+4. Selects representative sentences maintaining document flow
+5. Returns coherent summaries preserving original sentence order
+
+The approach balances traditional NLP techniques with machine learning enhancement, providing interpretable yet effective text summarization.
