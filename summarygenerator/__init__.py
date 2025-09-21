@@ -1,8 +1,16 @@
-"""summarygenerator package
+"""summarygenerator package reorganised into focused modules."""
 
-This package contains the original `model_features.py` moved into a package.
-"""
+from . import entity, rbm, resources, text_features
+from .model_features import executeForAFile
+from .rbm import RBM, load_data, test_rbm
 
-from . import model_features
-
-__all__ = ["model_features"]
+__all__ = [
+    "executeForAFile",
+    "entity",
+    "rbm",
+    "resources",
+    "text_features",
+    "RBM",
+    "load_data",
+    "test_rbm",
+]
