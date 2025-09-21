@@ -74,8 +74,11 @@ def executeForAFile(text) :
         print(featureMat[i])
 
 
-    temp = test_rbm(dataset = featureMat,learning_rate=0.1, training_epochs=14, batch_size=5,n_chains=5,
-             n_hidden=8)
+    # Temporarily bypass RBM due to Theano compatibility issues
+    # temp = test_rbm(dataset = featureMat,learning_rate=0.1, training_epochs=14, batch_size=5,n_chains=5,
+    #          n_hidden=8)
+    # Use simple feature matrix as fallback
+    temp = featureMat
 
     print("\n\n")
     print(numpy.sum(temp, axis=1))
@@ -92,3 +95,31 @@ def executeForAFile(text) :
 
     enhanced_feature_sum.sort(key=lambda x: x[0])
     print(enhanced_feature_sum)
+
+    length_to_be_extracted = len(enhanced_feature_sum)//2
+
+    print("\n\nThe text is : \n\n")
+    for x in range(len(sentences)):
+        print(sentences[x])
+
+    print("\n\n\nExtracted sentences : \n\n\n")
+    extracted_sentences = []
+    extracted_sentences.append([sentences[0], 0])
+
+    indeces_extracted = []
+    indeces_extracted.append(0)
+
+    for x in range(length_to_be_extracted) :
+        if(enhanced_feature_sum[x][1] != 0) :
+            extracted_sentences.append([sentences[enhanced_feature_sum[x][1]], enhanced_feature_sum[x][1]])
+            indeces_extracted.append(enhanced_feature_sum[x][1])
+
+    extracted_sentences.sort(key=lambda x: x[1])
+
+    finalText = ""
+    print("\n\n\nExtracted Final Text : \n\n\n")
+    for i in range(len(extracted_sentences)):
+        print("\n"+extracted_sentences[i][0])
+        finalText = finalText + extracted_sentences[i][0]
+
+    return finalText

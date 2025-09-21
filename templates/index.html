@@ -4,65 +4,7 @@
     <meta charset="utf-8" />
     <title>Summary Generator</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f7f7f7;
-      }
-      .container {
-        max-width: 720px;
-        margin: 40px auto;
-        padding: 20px;
-        background-color: #ffffff;
-        border: 1px solid #dddddd;
-        box-sizing: border-box;
-      }
-      h1 {
-        margin-top: 0;
-        font-size: 24px;
-      }
-      label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: bold;
-      }
-      textarea {
-        width: 100%;
-        min-height: 160px;
-        padding: 10px;
-        border: 1px solid #cccccc;
-        box-sizing: border-box;
-        resize: vertical;
-      }
-      button {
-        margin-top: 12px;
-        padding: 10px 16px;
-        border: none;
-        background-color: #0066cc;
-        color: #ffffff;
-        cursor: pointer;
-      }
-      button:disabled {
-        background-color: #9ab6d6;
-        cursor: default;
-      }
-      .status {
-        margin-top: 12px;
-        font-size: 14px;
-      }
-      .summary {
-        margin-top: 16px;
-        padding: 12px;
-        border: 1px solid #cccccc;
-        background-color: #f0f0f0;
-        white-space: pre-wrap;
-      }
-      .hidden {
-        display: none;
-      }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
   </head>
   <body>
     <div class="container">
@@ -76,53 +18,6 @@
       <div class="summary hidden" id="summary-output"></div>
     </div>
 
-    <script>
-      const form = document.getElementById('summary-form');
-      const textarea = document.getElementById('text-input');
-      const statusEl = document.getElementById('status');
-      const summaryEl = document.getElementById('summary-output');
-      const submitBtn = document.getElementById('submit-btn');
-
-      function setStatus(message, isError) {
-        statusEl.textContent = message;
-        statusEl.style.color = isError ? '#cc0000' : '#333333';
-        statusEl.classList.remove('hidden');
-      }
-
-      form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const text = textarea.value.trim();
-        if (!text) {
-          setStatus('Please enter text to summarise.', true);
-          return;
-        }
-
-        submitBtn.disabled = true;
-        setStatus('Generating summary, please wait...');
-        summaryEl.classList.add('hidden');
-
-        try {
-          const response = await fetch('/json-example', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ textString: text }),
-          });
-
-          if (!response.ok) {
-            const errorPayload = await response.json().catch(() => ({}));
-            throw new Error(errorPayload.error || 'Request failed');
-          }
-
-          const data = await response.json();
-          summaryEl.textContent = data.summary || 'No summary returned.';
-          summaryEl.classList.remove('hidden');
-          setStatus('Summary generated successfully.');
-        } catch (err) {
-          setStatus(err.message, true);
-        } finally {
-          submitBtn.disabled = false;
-        }
-      });
-    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
   </body>
 </html>

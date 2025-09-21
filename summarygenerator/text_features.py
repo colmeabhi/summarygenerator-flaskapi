@@ -233,3 +233,4 @@ def thematicFeature(tokenized_sentences) :
                 print("ERR")
         score = 1.0*score/(number_of_words)
         scores.append(score)
+    return scores
