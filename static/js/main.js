@@ -23,7 +23,7 @@ form.addEventListener('submit', async (event) => {
   summaryEl.classList.add('hidden');
 
   try {
-    const response = await fetch('/json-example', {
+    const response = await fetch('/post_summary', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ textString: text }),

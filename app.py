@@ -13,7 +13,7 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/json-example', methods=['POST'])
+@app.route('/post_summary', methods=['POST'])
 def summary_creator():
     request_data = request.get_json()
     if not request_data or 'textString' not in request_data:

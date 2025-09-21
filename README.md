@@ -4,7 +4,7 @@ This project exposes a Flask-based HTTP API that summarises free-form text. It c
 
 The codebase is split into focused modules under `summarygenerator/`:
 
-- `app.py` – Flask entry point that exposes the `/json-example` POST endpoint.
+- `app.py` – Flask entry point that exposes the `/post_summary` POST endpoint.
 - `summarygenerator/entity.py` – Named-entity extraction helpers built on NLTK.
 - `summarygenerator/text_features.py` – Text cleaning, tokenisation, sentence scoring and utility functions.
 - `summarygenerator/rbm_simple.py` – PCA-based feature enhancement system (scikit-learn-backed).
@@ -48,7 +48,7 @@ The server logs will indicate if the default port is already in use. Choose an a
 
 ## Requesting a Summary
 
-Endpoint: `POST /json-example`
+Endpoint: `POST /post_summary`
 
 Request body (JSON):
 
@@ -61,7 +61,7 @@ Request body (JSON):
 Using `curl`:
 
 ```bash
-curl -X POST http://localhost:5001/json-example \
+curl -X POST http://localhost:5001/post_summary \
      -H 'Content-Type: application/json' \
      -d '{"textString": "Your paragraph text here."}'
 ```

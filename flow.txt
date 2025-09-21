@@ -16,7 +16,7 @@ The text summarization system is a Flask-based API that implements an extractive
 ## Complete Processing Flow
 
 ### 1. HTTP Request Reception
-**Entry Point:** app.py route `/json-example` (POST)
+**Entry Point:** app.py route `/post_summary` (POST)
 **Input:** JSON with `textString` field
 **Validation:** Ensures textString exists
 **Delegation:** Calls model_features.executeForAFile(text)
