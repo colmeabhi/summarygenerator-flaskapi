@@ -1,8 +1,9 @@
 """summarygenerator package reorganised into focused modules."""
 
-from . import entity, rbm, resources, text_features
-from .model_features import executeForAFile
-from .rbm import RBM, load_data, test_rbm
+from . import entity, resources, text_features
+from . import rbm_simple as rbm  # Use rbm_simple as rbm module
+from .summary import executeForAFile
+from .rbm_simple import RBM, load_data, test_rbm
 
 __all__ = [
     "executeForAFile",

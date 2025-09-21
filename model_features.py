@@ -2,7 +2,7 @@
 """Compatibility layer exposing the legacy model_features API via the new modular structure."""
 
 from summarygenerator.entity import extract_entity_names, namedEntityRecog, ner
-from summarygenerator.rbm import RBM, load_data, test_rbm
+from summarygenerator.rbm_simple import RBM, load_data, test_rbm
 from summarygenerator.summary import executeForAFile
 from summarygenerator.text_features import (
     centroidSimilarity,
