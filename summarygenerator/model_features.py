@@ -10,12 +10,7 @@ except ImportError:
 import numpy
 import theano
 import theano.tensor as T
-# Theano-PyMC reorganised its random streams API, so we alias the new location
-# back to the legacy name that the original code expects.
-try:
-    from theano.tensor.random.utils import RandomStream as RandomStreams
-except ImportError:  # pragma: no cover - legacy Theano 1.0.x support
-    from theano.tensor.shared_randomstreams import RandomStreams
+from theano.tensor.shared_randomstreams import RandomStreams
 import re
 from nltk.corpus import stopwords
 import nltk
@@ -306,7 +301,8 @@ class RBM(object):
                 nh_samples
             ],
             updates
-        ) = theano.scan(
+        )
+    = theano.scan(
             self.gibbs_hvh,
             # the None are place holders, saying that
             # chain_start is the initial state corresponding to the
@@ -534,7 +530,8 @@ def test_rbm(dataset,learning_rate=0.1, training_epochs=5, batch_size=4,n_chains
             vis_samples
         ],
         updates
-    ) = theano.scan(
+    )
+    = theano.scan(
         rbm.gibbs_vhv,
         outputs_info=[None, None, None, None, None, persistent_vis_chain],
         n_steps=plot_every,
@@ -587,10 +584,10 @@ def split_into_sentences(text):
     text = re.sub(" "+suffixes+"[.]"," \\1<prd>",text)
     text = re.sub(" " + caps + "[.]"," \\1<prd>",text)
     if "”" in text: text = text.replace(".”","”.")
-    if "\"" in text: text = text.replace(".\"","\".")
-    if "!" in text: text = text.replace("!\"","\"!")
-    if "?" in text: text = text.replace("?\"","\"?")
-    #if "," in text: text = text.replace(",\"","\",")
+    if "\"" in text: text = text.replace('."','".')
+    if "!" in text: text = text.replace('!"','"!')
+    if "?" in text: text = text.replace('?"','"?')
+    #if "," in text: text = text.replace(',"','\",')
 
     text = text.replace(".",".<stop>")
     text = text.replace("?","?<stop>")
@@ -802,6 +799,7 @@ def executeForAFile(text) :
     sentences = split_into_sentences(text)
     text_len = len(sentences)
     sentenceLengths.append(text_len)
+
 
     tokenized_sentences = remove_stop_words(sentences)
     tagged = posTagger(remove_stop_words(sentences))
