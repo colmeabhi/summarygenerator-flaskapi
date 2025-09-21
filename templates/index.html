@@ -6,84 +6,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-family: Arial, sans-serif;
         margin: 0;
-        min-height: 100vh;
-        background: #f4f6fb;
-        color: #1f2933;
+        padding: 0;
+        background-color: #f7f7f7;
       }
-      header {
-        background: #1f6feb;
-        color: #fff;
-        padding: 1.5rem 2rem;
-        text-align: center;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      .container {
+        max-width: 720px;
+        margin: 40px auto;
+        padding: 20px;
+        background-color: #ffffff;
+        border: 1px solid #dddddd;
+        box-sizing: border-box;
       }
-      main {
-        max-width: 800px;
-        margin: 2rem auto;
-        padding: 2rem;
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+      h1 {
+        margin-top: 0;
+        font-size: 24px;
       }
       label {
         display: block;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
+        margin-bottom: 8px;
+        font-weight: bold;
       }
       textarea {
-        resize: vertical;
         width: 100%;
         min-height: 160px;
-        padding: 1rem;
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        font-size: 1rem;
-        line-height: 1.5;
-      }
-      textarea:focus {
-        border-color: #1f6feb;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.2);
+        padding: 10px;
+        border: 1px solid #cccccc;
+        box-sizing: border-box;
+        resize: vertical;
       }
       button {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-top: 1rem;
-        background: #1f6feb;
-        color: #fff;
+        margin-top: 12px;
+        padding: 10px 16px;
         border: none;
-        padding: 0.85rem 1.5rem;
-        border-radius: 8px;
-        font-size: 1rem;
+        background-color: #0066cc;
+        color: #ffffff;
         cursor: pointer;
-        transition: transform 0.1s ease, box-shadow 0.1s ease;
-      }
-      button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 16px rgba(31, 111, 235, 0.2);
       }
       button:disabled {
-        opacity: 0.65;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
+        background-color: #9ab6d6;
+        cursor: default;
       }
       .status {
-        margin-top: 1rem;
-        font-size: 0.95rem;
-        color: #475569;
+        margin-top: 12px;
+        font-size: 14px;
       }
       .summary {
-        margin-top: 2rem;
-        padding: 1.5rem;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
+        margin-top: 16px;
+        padding: 12px;
+        border: 1px solid #cccccc;
+        background-color: #f0f0f0;
         white-space: pre-wrap;
-        line-height: 1.6;
       }
       .hidden {
         display: none;
@@ -91,67 +65,58 @@
     </style>
   </head>
   <body>
-    <header>
+    <div class="container">
       <h1>Summary Generator</h1>
-      <p>Paste your text and let the RBM-powered summariser do the rest.</p>
-    </header>
-    <main>
       <form id="summary-form">
-        <label for="text-input">Input text</label>
-        <textarea
-          id="text-input"
-          placeholder="Paste or type the paragraph you want to summarise"
-          required
-        ></textarea>
+        <label for="text-input">Text to summarise</label>
+        <textarea id="text-input" placeholder="Paste your text here" required></textarea>
         <button type="submit" id="submit-btn">Generate Summary</button>
-        <p class="status hidden" id="status"></p>
+        <div class="status hidden" id="status"></div>
       </form>
-      <section class="summary hidden" id="summary-output"></section>
-    </main>
+      <div class="summary hidden" id="summary-output"></div>
+    </div>
 
     <script>
       const form = document.getElementById('summary-form');
-      const textInput = document.getElementById('text-input');
+      const textarea = document.getElementById('text-input');
       const statusEl = document.getElementById('status');
       const summaryEl = document.getElementById('summary-output');
       const submitBtn = document.getElementById('submit-btn');
 
-      function setStatus(message, isError = false) {
+      function setStatus(message, isError) {
         statusEl.textContent = message;
+        statusEl.style.color = isError ? '#cc0000' : '#333333';
         statusEl.classList.remove('hidden');
-        statusEl.style.color = isError ? '#dc2626' : '#475569';
       }
 
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const text = textInput.value.trim();
+        const text = textarea.value.trim();
         if (!text) {
-          setStatus('Please enter some text to summarise.', true);
+          setStatus('Please enter text to summarise.', true);
           return;
         }
 
         submitBtn.disabled = true;
-        setStatus('Generating summary… this may take a few seconds.');
+        setStatus('Generating summary, please wait...');
         summaryEl.classList.add('hidden');
 
         try {
           const response = await fetch('/json-example', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ textString: text }),
           });
 
           if (!response.ok) {
             const errorPayload = await response.json().catch(() => ({}));
-            throw new Error(errorPayload.error || 'Request failed. Please try again.');
+            throw new Error(errorPayload.error || 'Request failed');
           }
 
           const data = await response.json();
           summaryEl.textContent = data.summary || 'No summary returned.';
           summaryEl.classList.remove('hidden');
-          setStatus('Summary generated successfully!');
+          setStatus('Summary generated successfully.');
         } catch (err) {
           setStatus(err.message, true);
         } finally {
