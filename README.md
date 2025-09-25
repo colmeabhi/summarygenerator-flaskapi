@@ -20,8 +20,8 @@ The codebase is split into focused modules under `summarygenerator/`:
 ## Local Setup
 
 ```bash
-git clone https://github.com/colmeabhi/summarygenerator-flaskapi.git
-cd summarygenerator-flaskapi
+git clone https://github.com/colmeabhi/rbm-summarization-model.git
+cd rbm-summarization-model
 
 # Create and activate a virtual environment (example using venv)
 python3 -m venv .venv
